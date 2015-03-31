@@ -4,7 +4,7 @@
 interval(250) #Update every 1/4th of a second to see if we can make another request.
 if(first()){
     
-    if(entity():getName()=="Bacon's HTTP Query Lib"){setVersion("1")}
+    if(entity():getName()=="Bacon's HTTP Query Lib"){setVersion("1.1")}
     
     runOnHTTP(1)
     function httpQueueURL(URL:string,CallbackFunc:string,CallbackArgs:table){

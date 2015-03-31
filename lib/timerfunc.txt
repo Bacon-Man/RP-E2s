@@ -3,7 +3,7 @@
 #include "lib/update"
 if(first()){
         
-    if(entity():getName()=="Bacon's Function Timers Lib"){setVersion("1")}
+    if(entity():getName()=="Bacon's Function Timers Lib"){setVersion("1.1")}
     
     #Name: timerFunc
     #Description: Creates a function timer and returns it's timerID.

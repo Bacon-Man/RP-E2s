@@ -1,5 +1,5 @@
 @name Bacon's Update Lib
-@persist [UpdateText Version ID URL E2Name]:string
+@persist [UpdateText Version ID URL E2Name]:string Checked
 if(first()){
     
     runOnHTTP(1)
@@ -9,6 +9,9 @@ if(first()){
     ID = hash(E2Name):toString(16)
     
     function checkVersion(Data:string){
+        
+        if(Checked){return}
+        Checked = 1
         
         local RTbl = Data:match(ID+" %- v(.-)\n(.-)\n\n")
         

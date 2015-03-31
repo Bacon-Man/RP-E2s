@@ -3,7 +3,7 @@
 #include "lib/update"
 if(first()){
     
-    setVersion("1")
+    if(entity():getName()=="Bacon's Chat Lib"){setVersion("1")}
     
     runOnChat(1)
     

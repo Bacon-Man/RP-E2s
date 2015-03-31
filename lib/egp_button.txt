@@ -18,7 +18,7 @@
 ]#
 if(first()){
     
-    setVersion("1")
+    if(entity():getName()=="Bacon's EGP Button Lib"){setVersion("1")}
     
     function void wirelink:egpSetButtonUserInput(UserInput:string){
         

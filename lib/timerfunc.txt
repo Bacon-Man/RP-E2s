@@ -1,0 +1,77 @@
+@name Bacon's Function Timers Lib
+@persist Timers:table T
+#include "lib/update"
+if(first()){
+        
+    setVersion("1")
+    
+    #Name: timerFunc
+    #Description: Creates a function timer and returns it's timerID.
+    #Args: Time - Delay in milliseconds to execute function.
+    #      Func - The function name.
+    #      Args - The argument table wanted to pass to the function. Can be empty.
+    #Returns: timerID
+    function string timerFunc(Time,TimerName:string,Func:string,Args:table){
+        if(TimerName==""){T++ TimerName=Func+"/"+T}
+        Timers[TimerName,table]=table(Func,Args)
+        stoptimer(TimerName)
+        timer(TimerName,Time)
+    }
+    # I can understand not wanting to create a table for one argument, so the following declares every
+    # datatype in the Args:table argument slot and places it in a table to pass to the original function.
+    # This is an extremely annoying way of doing such a thing btw.
+    function string timerFunc(Time,TimerName:string,Func:string,Arg:string){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:vector2){return timerFunc(Time,TimerName,Func,table(Arg))}
+    function string timerFunc(Time,TimerName:string,Func:string,Arg:number){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:vector){return timerFunc(Time,TimerName,Func,table(Arg))}
+    function string timerFunc(Time,TimerName:string,Func:string,Arg:array){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:vector4){return timerFunc(Time,TimerName,Func,table(Arg))}
+    function string timerFunc(Time,TimerName:string,Func:string,Arg:angle){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:entity){return timerFunc(Time,TimerName,Func,table(Arg))}
+    function string timerFunc(Time,TimerName:string,Func:string,Arg:ranger){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:bone){return timerFunc(Time,TimerName,Func,table(Arg))}
+    function string timerFunc(Time,TimerName:string,Func:string,Arg:matrix2){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:matrix){return timerFunc(Time,TimerName,Func,table(Arg))}
+    function string timerFunc(Time,TimerName:string,Func:string,Arg:matrix4){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:wirelink){return timerFunc(Time,TimerName,Func,table(Arg))}
+    function string timerFunc(Time,TimerName:string,Func:string,Arg:complex){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:quaternion){return timerFunc(Time,TimerName,Func,table(Arg))}
+    # Can't forget the no argument easy timer func.
+    function string timerFunc(Time,TimerName:string,Func:string){return timerFunc(Time,TimerName,Func,table())}
+    
+    #Name: timerFuncStop
+    #Description: Stops a function timer.
+    #Args: timerID
+    #Returns:
+    #   1 - Successfully stopped
+    #   0 - Timer doesn't exist
+    function normal timerFuncStop(T_ID:string){
+        if(Timers:exists(T_ID)){
+            stoptimer(T_ID)
+            Timers:removeTable(T_ID)
+            return 1
+        }
+        return 0
+    }
+    
+    #Name: timerFuncExists
+    #Description: Returns if a timer exists by T_ID.
+    #Args: timerID
+    #Returns:
+    #   1 - Timer exists
+    #   0 - Timer doesn't exist or it may have already been called
+    function normal timerFuncExists(T_ID:string){if(Timers:exists(T_ID)){return 1} return 0}
+    
+    #Name: timerFuncClk
+    #Description: Returns if the given timerID called the current execution.
+    #Args: timerID
+    #Returns:
+    #   1 - Executed by this timer
+    #   0 - Executed for some other reason
+    function normal timerFuncClk(T_ID:string){if(clk(T_ID)){return 1} return 0}
+    
+    #Following are substitute functions for those who want easy access to delay print messages.
+    function tPrintColor(Args:table){printColor(Args:toArray())}
+    function tPrint(Args:table){print(Args:concat())}
+}
+Timer=clkName()
+if(Timers:exists(Timer)){
+    local FTT=Timers[Timer,table]:clone()
+    Timers:removeTable(Timer)
+    FTT[1,string](FTT[2,table])
+}
+
+#print("TimerFuncLib_Tick",Timers:count())
+

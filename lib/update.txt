@@ -1,0 +1,48 @@
+@name Bacon's Update Lib
+@persist [UpdateText Version ID URL E2Name]:string
+if(first()){
+    
+    runOnHTTP(1)
+    URL = "http://dl.dropboxusercontent.com/u/17347758/e2/updates.txt"
+    UpdateText = "An update is available!\n----------\n- %s - v%s\n----------\nUpdate Notes:\n%s\n\nLink: %s"
+    E2Name = entity():getName()
+    ID = hash(E2Name):toString(16)
+    
+    function checkVersion(Data:string){
+        
+        local RTbl = Data:match(ID+" %- v(.-)\n(.-)\n\n")
+        
+        if(RTbl:count()==0){
+            soundPlay("UpdateE2",3,"npc/turret_floor/die.wav")
+            print("An error occured with the update checker. See console for details.")
+            print(_HUD_PRINTCONSOLE,"\nCould not find update file or this E2 does not support updating.\nThis will occur if the E2's name is different from the original name.\nAsk Bacon for more information and give him:\n\tERROR CODE: 4x"+ID+"\n\n")
+            return
+        }
+        
+        local CurVersion = RTbl[1,string]
+        local UpdateNotes = RTbl[2,string]
+        
+        if(CurVersion!=Version){
+            
+            soundPlay("UpdateE2",3,"buttons/bell1.wav")
+            print("An update is available! See console for details!")
+            print(_HUD_PRINTCONSOLE,"\n----------\n- "+entity():getName()+" - v"+CurVersion+"\n----------\nUpdate Notes:")
+            print(_HUD_PRINTCONSOLE,UpdateNotes+"\n\n")
+            print(_HUD_PRINTCONSOLE,"Download the updated E2 at http://github.com/Bacon-Man/RP-E2s/\n\n")
+            return
+            
+        }
+        
+    }
+    
+    function setVersion(V:string){
+        Version=V
+        httpRequest(URL)
+    }
+    if(E2Name=="Bacon's Update Lib"){setVersion("1")}
+    
+}
+
+if(httpClk()&httpRequestUrl()==URL){
+    checkVersion(httpData())
+}

@@ -1,0 +1,121 @@
+@name Bacon's EGP Button Lib
+@persist [EGPs SIDs Clicked]:table CurP Plys:array MaxOPS ClickDist TestT
+@persist 
+#include "lib/update"
+#[
+    Creator: Kevin Bacon
+    Notes:
+        - You must use egpSetButtonUserInput function to not only add the user of an EGP to
+            allow buttons to work, but also to add the EGP to the EGPs table for button use.
+            * THIS FUNCTION MUST BE CALLED FIRST!
+            * The argument passed is the string name of the E2 input connected to the EGP screen's User output.
+        - Buttons start off enabled.
+        - Not using the AllowUsers function on buttons will mean anyone can press that button.
+        - Considering the previous using AllowUser on a button after using AllowAll will
+            remove the everyone and add the users specified in AllowUsers.
+        - The AllowUsers function accepts a user table in this format: table(owner():id()=1,<ply_ID>=1).
+        - The DisallowUsers function only removes users that are on the allowed list for that button.
+]#
+if(first()){
+    
+    setVersion("1")
+    
+    function void wirelink:egpSetButtonUserInput(UserInput:string){
+        
+        local SID = This:entity():toString()
+        if(!EGPs:exists(SID)){
+            EGPs[SID,table] = table( "Buttons"=table(), "ClickDist"=64, "Enabled"=1, "Users"=table(), "Wirelink" = This )
+        }
+        EGPs[SID,table]["UserInput",string] = UserInput
+        
+    }
+    
+    function string wirelink:egpButton(Pos:vector2,Size:vector2,Func:string,Args:table){
+        
+        local SID = This:entity():toString()
+        local BID = "BID_"+hash( SID + Func + Pos:toString() + Size:toString() + random(2) )
+        EGPs[SID,table]["Buttons",table][BID,table] = table("Pos" = Pos,"Size" = Size,"Func" = Func,
+                                   "Args" = Args,"Enabled" = 1,"Users" = table(),
+                                   "Delay" = 100)
+        SIDs[BID,string] = SID
+        return BID
+        
+    }
+    function string wirelink:egpButton(Pos:vector2,Size:vector2,Func:string){return This:egpButton(Pos,Size,Func,table())}
+    
+    function void wirelink:egpButtonsEnableClicking(On){ EGPs[This:entity():toString(),table]["Enabled",number] = (On > 0) }
+    
+    function void wirelink:egpButtonsAllowUsers(Users:array){
+        
+        EGPs[This:entity():toString(),table]["Users",table] = table()
+        for(I=1,Users:count()){
+            EGPs[This:entity():toString(),table]["Users",table][Users[I,entity]:id(),number] = 1
+        }
+        
+    }
+    
+    function void string:egpButtonEnable(Enabled){ EGPs[SIDs[This,string],table]["Buttons",table][This,table]["Enabled",number] = (Enabled > 0) }
+    
+    function void string:egpButtonPos(Pos:vector2){ EGPs[SIDs[This,string],table]["Buttons",table][This,table]["Pos",vector2] = Pos }
+    
+    function void string:egpButtonSize(Size:vector2){ EGPs[SIDs[This,string],table]["Buttons",table][This,table]["Size",vector2] = Size }
+    
+    function void string:egpButtonFunc(Func:string){ EGPs[SIDs[This,string],table]["Buttons",table][This,table]["Func",string] = Func }
+    
+    function void string:egpButtonArgs(Args:table){ EGPs[SIDs[This,string],table]["Buttons",table][This,table]["Args",table] = Args }
+    
+    function void string:egpRemoveButton(){ EGPs[SIDs[This,string],table]["Buttons",table]:remove(This) }
+    
+    function void string:egpButtonAllowUsers(Users:array){
+        
+        local SID = SIDs[This,string]
+        for(I=1,Users:count()){
+            EGPs[SID,table]["Buttons",table][This,table]["Users",table][Users[I,entity]:id(),number] = 1
+        }
+        
+    }
+    
+    function void string:egpButtonAllowAllUsers(){ EGPs[SIDs[This,string],table]["Buttons",table][This,table]["Users",table] = table() }
+    
+    function void egpButtonsOPS(OPS){ MaxOPS = OPS }
+    
+    function void wirelink:egpButtonClickDist(Dist){ EGPs[This:entity():toString(),table]["ClickDist",number] = Dist }
+    
+    function void string:egpButtonClickDelay(Delay){ EGPs[SIDs[This,string],table]["Buttons",table][This,table]["Delay",number] = Delay }
+    
+    function void wirelink:egpButtonClick(User:entity){
+        
+        local ETbl = EGPs[This:entity():toString(),table]
+        local EPos = This:egpCursor(User)
+        
+        if(!ETbl["Enabled",number]){return} # Enabled?
+        if(ETbl["Users",table]:count()>0&!ETbl["Users",table]:exists(User:id())){return}
+        
+        foreach(BID,BtnTbl:table=ETbl["Buttons",table]){
+            
+            if(!BtnTbl["Enabled",number]|Clicked:exists(BID)){continue}
+            
+            if(BtnTbl["Users",table]:count()>0&!BtnTbl["Users",table]:exists(User:id())){continue}
+            local Pos = BtnTbl["Pos",vector2]
+            local Size = BtnTbl["Size",vector2]
+            if(!inrange(EPos,Pos-(Size/2),Pos+(Size/2))){continue}
+            
+            BtnTbl["Func",string](User,BID,BtnTbl["Args",table])
+            Clicked[BID,number] = 1
+            
+            timer( "BID;"+BID, BtnTbl["Delay",number] )
+            
+        }
+        
+    }
+    
+}
+if(clkName():find("BID;")){ Clicked:remove(clkName():explode(";")[2,string]) }
+if(inputClk()){
+    foreach(SID,EGPTbl:table=EGPs){
+        local User = ioGetInputEntity(EGPTbl["UserInput",string])
+        if(User:isValid()){
+            EGPTbl["Wirelink",wirelink]:egpButtonClick(User)
+        }
+    }
+}

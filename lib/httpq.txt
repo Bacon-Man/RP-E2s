@@ -1,0 +1,72 @@
+@name Bacon's HTTP Query Lib
+@persist [CBT]:table CallQueue:array
+#include "lib/update"
+interval(250) #Update every 1/4th of a second to see if we can make another request.
+if(first()){
+    
+    setVersion("1")
+    
+    runOnHTTP(1)
+    function httpQueueURL(URL:string,CallbackFunc:string,CallbackArgs:table){
+        
+        if(CBT:exists(URL)){
+            
+            local TI=1
+            while(CBT[URL,table]:exists("ACB"+TI)){TI++}
+            CBT[URL,table]["ACB"+TI,table]=table("CBF"=CallbackFunc,"CBA"=CallbackArgs)
+            CBT[URL,table]["ACI",number]=TI
+            
+        }else{
+        
+            CBT[URL,table]=table("CBF"=CallbackFunc,"CBA"=CallbackArgs)
+            if(httpCanRequest()){
+                httpRequest(URL)
+            }else{
+                CallQueue:pushString(URL)
+            }
+            
+        }
+    }
+    
+    function httpSearchDecode(Packet:table){
+        local Data=Packet["DATA",string]
+        local Args=Packet["ARGS",table]
+        local Search=Args["S",string]
+        
+        Args["CBF",string](table("SR"=Data:gmatch(Search),"ARGS"=Args["CBA",table]))
+        
+    }
+    
+    function table httpSearchURL(URL:string,Search:string,CallbackFunc:string,CallbackArgs:table){
+        httpQueueURL(URL,"httpSearchDecode",table("S"=Search,"CBF"=CallbackFunc,"CBA"=CallbackArgs))
+    }
+    
+    function httpRunQueue(T:table,URL:string,DATA:string){
+        if(T["CBF",string]!=""){
+            T["CBF",string](table("DATA"=DATA,"ARGS"=T["CBA",table]))
+        }
+        if(T:exists("ACI")){
+            for(I=1,T["ACI",number]){
+                T["ACB"+I,table]["CBF",string](table("DATA"=DATA,"ARGS"=T["ACB"+I,table]["CBA",table]))
+            }
+        }
+    }
+    
+    function httpRunURL_DATA(URL:string,DATA:string){
+        if(CBT:exists(URL)){
+            httpRunQueue(CBT[URL,table],URL,DATA)
+            CBT:removeTable(URL)
+        }
+    }
+    
+}
+
+if(httpClk()){
+    local R_URL=httpRequestUrl()
+    local R_DATA=httpData()
+    httpRunURL_DATA(R_URL,R_DATA)
+}
+
+if(httpCanRequest()&CallQueue:count()>0){
+    httpRequest(CallQueue:shiftString())
+}

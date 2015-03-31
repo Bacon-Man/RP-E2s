@@ -1,0 +1,93 @@
+@name Bacon's Chat Lib
+@persist [Commands AllCmdsUsers CMD_INFO]:table Prefix:string
+#include "lib/update"
+if(first()){
+    
+    setVersion("1")
+    
+    runOnChat(1)
+    
+    Prefix="$"
+    AllCmdsUsers = table(owner():steamID()=1)
+    
+    function setChatCMDPrefix(Str:string){ Prefix=Str:index(1) }
+    
+    function registerChatCMD(Cmd:string,Func:string,Args:string){
+        
+        Commands[Cmd:lower(),table]=table("Func"=Func,"Users"=table())
+        if(Cmd!="Commands"){CMD_INFO[Cmd,string] = (Args!="" ? Args : "Func: "+Func )}
+        
+    }
+    
+    function registerChatCMD(Cmd:string,Func:string){ registerChatCMD(Cmd,Func,"") }
+    
+    function allowChatCMDUsers(Cmd:string,Users:array){
+        
+        for(I=1,Users:count()){
+            Commands[Cmd:lower(),table]["Users",table][Users[I,entity]:steamID(),number] = 1
+        }
+        
+    }
+    
+    function disallowChatCMDUsers(Cmd:string,Users:array){
+        
+        Cmd = Cmd:lower()
+        local CmdTbl = Commands[Cmd,table]
+        for(I=1,Users:count()){
+            local SID = Users[I,entity]:steamID()
+            if(CmdTbl["Users",table]:exists(SID)){
+                Commands[Cmd,table]["Users",table]:removeString(SID)
+            }
+        }
+        
+    }
+    
+    function allowAllChatCMDsUsers(Users:array){
+        
+        for(I=1,Users:count()){
+            AllCmdsUsers[Users[I,entity]:steamID(),number] = 1
+        }
+        
+    }
+    
+    function disallowAllChatCMDsUsers(Users:array){
+        
+        for(I=1,Users:count()){
+            local SID = Users[I,entity]:steamID()
+            if(AllCmdsUsers:exists(SID)){
+                AllCmdsUsers:removeString(SID)
+            }
+        }
+        
+    }
+    
+    function cmdDisplayCommands(Args:array){
+        
+        print("Commands for '"+entity():getName()+"':")
+        printTable(CMD_INFO)
+        
+    }
+    
+    registerChatCMD("Commands","cmdDisplayCommands","[STRING] - Optional string to search in the command names and descriptions.")
+    
+}
+if(chatClk()&lastSaid():index(1)==Prefix&lastSaid():length()>1){
+    
+    hideChat(1)
+    local ChatTbl = lastSaid():sub(2,-1):explode(" ")
+    local Cmd = ChatTbl:shiftString():lower()
+    local CmdTbl = Commands[Cmd,table]
+    local CmdAllow = CmdTbl["Users",table]
+    local SID = lastSpoke():steamID()
+    
+    if(CmdTbl["Func",string]!=""){
+        if( CmdAllow:exists(SID) | AllCmdsUsers:count()==0 | AllCmdsUsers:exists(SID) ){
+            CmdTbl["Func",string](ChatTbl)
+        }else{
+            print(lastSpoke():name()+" tried to used the '"+Cmd+"' command for '"+entity():getName()+"'!")
+        }
+    }else{
+        print("Invalid command: "+Cmd)
+    }
+    
+}

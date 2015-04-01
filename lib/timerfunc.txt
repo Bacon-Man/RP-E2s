@@ -3,7 +3,7 @@
 #include "lib/update"
 if(first()){
         
-    if(entity():getName()=="Bacon's Function Timers Lib"){setVersion("1.1")}
+    if(entity():getName()=="Bacon's Function Timers Lib"){setVersion("1.2")}
     
     #Name: timerFunc
     #Description: Creates a function timer and returns it's timerID.
@@ -17,18 +17,6 @@ if(first()){
         stoptimer(TimerName)
         timer(TimerName,Time)
     }
-    # I can understand not wanting to create a table for one argument, so the following declares every
-    # datatype in the Args:table argument slot and places it in a table to pass to the original function.
-    # This is an extremely annoying way of doing such a thing btw.
-    function string timerFunc(Time,TimerName:string,Func:string,Arg:string){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:vector2){return timerFunc(Time,TimerName,Func,table(Arg))}
-    function string timerFunc(Time,TimerName:string,Func:string,Arg:number){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:vector){return timerFunc(Time,TimerName,Func,table(Arg))}
-    function string timerFunc(Time,TimerName:string,Func:string,Arg:array){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:vector4){return timerFunc(Time,TimerName,Func,table(Arg))}
-    function string timerFunc(Time,TimerName:string,Func:string,Arg:angle){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:entity){return timerFunc(Time,TimerName,Func,table(Arg))}
-    function string timerFunc(Time,TimerName:string,Func:string,Arg:ranger){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:bone){return timerFunc(Time,TimerName,Func,table(Arg))}
-    function string timerFunc(Time,TimerName:string,Func:string,Arg:matrix2){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:matrix){return timerFunc(Time,TimerName,Func,table(Arg))}
-    function string timerFunc(Time,TimerName:string,Func:string,Arg:matrix4){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:wirelink){return timerFunc(Time,TimerName,Func,table(Arg))}
-    function string timerFunc(Time,TimerName:string,Func:string,Arg:complex){return timerFunc(Time,TimerName,Func,table(Arg))} function string timerFunc(Time,TimerName:string,Func:string,Arg:quaternion){return timerFunc(Time,TimerName,Func,table(Arg))}
-    # Can't forget the no argument easy timer func.
     function string timerFunc(Time,TimerName:string,Func:string){return timerFunc(Time,TimerName,Func,table())}
     
     #Name: timerFuncStop

@@ -42,7 +42,7 @@ if(first()){
         Version=V
         httpRequest(URL)
     }
-    if(E2Name=="Bacon's Update Lib"){setVersion("1")}
+    if(E2Name=="Bacon's Update Lib"){setVersion("1.1")}
     
 }
 
